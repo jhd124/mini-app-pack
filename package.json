@@ -1,0 +1,28 @@
+{
+  "name": "pack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.8.6",
+    "@babel/generator": "^7.8.6",
+    "@babel/helpers": "^7.8.4",
+    "@babel/parser": "^7.8.6",
+    "@babel/traverse": "^7.8.6",
+    "@babel/types": "^7.8.6",
+    "@types/babel__traverse": "^7.0.9",
+    "@types/cheerio": "^0.22.16",
+    "@types/css": "0.0.31",
+    "@types/fs-extra": "^8.1.0",
+    "@types/node": "^13.7.7",
+    "cheerio": "^1.0.0-rc.3",
+    "css": "^2.2.4",
+    "eslint": "^6.8.0",
+    "fs-extra": "^8.1.0"
+  }
+}
