@@ -1,8 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import {
-    readConfig
-} from "./helper";
+import { resolveJsDependencies } from "./resolveJsDependencies";
 
 const cwd = process.cwd();
 const SRC_DIR = path.join(cwd, "src")
@@ -19,61 +17,85 @@ function readAppJSON(){
     }
 }
 
-type DepPath = string
-
 enum DepType {
     JS = "js",
     WXML = "wxml",
     WXSS = "wxss",
     JSON = "json",
     WXS = "wxs",
+    NPM = "npm",
 }
 
 type DepCollection = {
-    [DepType.JS]: Map<DepPath, any>,
-    [DepType.WXML]: Map<DepPath, any>,
-    [DepType.WXSS]: Map<DepPath, any>,
-    [DepType.JSON]: Map<DepPath, any>,
-    [DepType.WXS]: Map<DepPath, any>,
+    [DepType.JS]: Map<string, any>,
+    [DepType.WXML]: Map<string, any>,
+    [DepType.WXSS]: Map<string, any>,
+    [DepType.JSON]: Map<string, any>,
+    [DepType.WXS]: Map<string, any>,
+    [DepType.NPM]: Map<string, any>,
 }
 
 const depCollection: DepCollection = {
+
     [DepType.JS]: new Map(),
     [DepType.WXML]: new Map(),
     [DepType.WXSS]: new Map(),
     [DepType.JSON]: new Map(),
     [DepType.WXS]: new Map(),
+    [DepType.NPM]: new Map(),
 }
 
 type DepItem = {
     type: DepType,
-    path: DepPath,
-    data: any,
+    path: string,
 }
 
-function setDep(dep: DepItem): void{
-    const {type, path, data } = dep;
-    const targetCollection = depCollection[type];
-    if(targetCollection.has(path)){
-        const currentData = targetCollection.get(path);
-        targetCollection.set(path, [...currentData, data]);
-    } else {
-        targetCollection.set(path, [data])
-    }
-}
-
-function setDeps(deps: DepItem[]){
-    for(const dep of deps){
-        setDep(dep)
-    }
-}
-
-function getDepsByType(type: DepType): Map<DepPath, any>{
+export function getDepsByType(type: DepType): Map<string, any>{
     return depCollection[type];
 }
 
-function getDepCollection(): DepCollection{
+export function getDepCollection(): DepCollection{
     return depCollection;
+}
+
+function isInCollection(depItem: DepItem): boolean{
+    const subCollection = depCollection[depItem.type];
+    if(subCollection.has(depItem.path)){
+        return true;
+    }
+    return false;
+}
+
+function resolveJsRecursive(path: string): void{
+    const depItem = {path, type: DepType.JS};
+    if(!path){
+        // noop
+    } else if(isInCollection(depItem)){
+        // noop
+    } else {
+        const deps = resolveJsDependencies(path);
+        const {
+            userModulePaths,
+            npmPaths,
+        } = deps;
+        const npmDepItems = npmPaths.map(path => ({ type: DepType.NPM, path }))
+        const jsDepItems = userModulePaths.map(path => ({type: DepType.JS, path}));
+        setDeps(npmDepItems);
+        setDeps(jsDepItems);
+
+        for(const filePath of userModulePaths){
+            resolveJsRecursive(filePath);
+        }
+
+    }
+}
+
+function resolveDependencies(){
+    digAppJSON();
+    const jsPaths = depCollection[DepType.JS].keys()
+    for(const jsPath of jsPaths){
+        resolveJsRecursive(jsPath);
+    }
 }
 
 function digAppJSON(): void{
@@ -98,21 +120,32 @@ function digAppJSON(): void{
     digPageJSONs(subpackagePageDepItems);
 }
 
+function setDep(dep: DepItem): void{
+    const {type, path } = dep;
+    const targetCollection = depCollection[type];
+    targetCollection.set(path, {path})
+}
+
+function setDeps(deps: DepItem[]){
+    for(const dep of deps){
+        setDep(dep)
+    }
+}
+
 function digPageJSONs(depItems: DepItem[]){
     for(const dep of depItems){
         digPageJSON(dep);
     }
 }
 
-function digPageJSON(depItem: DepItem, data?: any): void{
+function digPageJSON(depItem: DepItem): void{
     const { path: pagePath }= depItem
     if(fs.pathExistsSync(pagePath)){
         const pageConfig = fs.readJSONSync(pagePath);
         const { usingComponents } = pageConfig;
         const componentPaths = Object.values(usingComponents || {});
         const deps = genPageDepItems(
-            Object.values(usingComponents || {}), 
-            { referred: depItem }
+            Object.values(usingComponents || {})
         );
         setDeps(deps);
         digPageJSONs(deps)
@@ -140,7 +173,7 @@ function destructSubpackageFromAppJSON(subpackages: any[]): DepItem[]{
     return pagePathArrToDepItems(pagePathArr)
 }
 
-function genPageDepItems(pagePath: string, data?: any): DepItem[]{
+function genPageDepItems(pagePath: string): DepItem[]{
     return [
         DepType.JS,
         DepType.JSON,
@@ -149,7 +182,6 @@ function genPageDepItems(pagePath: string, data?: any): DepItem[]{
     ].map(depType => ({
         type: depType,
         path: appendFileSuffix(pagePath, depType),
-        data: data || {}
     }))
 }
 
@@ -157,7 +189,7 @@ function pagePathArrToDepItems(pagePathArr: string[]): DepItem[]{
     return pagePathArr.map(pagePath => genPageDepItems(pagePath)).reduce(arrConcat);
 }
 
-function appendFileSuffix(groupPath: string, suffix: string): DepPath{
+function appendFileSuffix(groupPath: string, suffix: string): string{
     return `${groupPath}.${suffix}`
 }
 
@@ -179,3 +211,4 @@ function flatten(arr: any[]){
     _flatten(arr, result);
     return result;
 }
+

@@ -1,1 +1,0 @@
-{"version":3,"file":"resolveWxsDependencies.js","sourceRoot":"","sources":["resolveWxsDependencies.ts"],"names":[],"mappings":";;AAAA,iCAAmC;AAEnC,iCAAiC,QAAQ;IACrC,IAAM,CAAC,GAAG,OAAO,CAAC,IAAI,CAAC,kEAAkE,CAAC,CAAA;IAC1F,OAAO,CAAC,GAAG,CAAC,CAAC,CAAC,KAAK,CAAC,CAAC,IAAI,CAAC,KAAK,CAAC,CAAC,CAAA;AACrC,CAAC"}

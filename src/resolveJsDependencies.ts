@@ -7,14 +7,6 @@ import {resolveUserModuleImportPath} from "./helper"
 const cwd = process.cwd();
 const SRC_DIR = pathJoin(cwd, "src")
 
-function getAst(path: string): any{
-    const code: string = fs.readFileSync(path, "utf8");
-    const ast: object = parse(code, {
-        sourceType: "module"
-    });
-    return ast;
-}
-
 export function resolveJsDependencies(filePath: string){
     const ast = getAst(filePath);
     const { dir } = pathParse(filePath);
@@ -40,6 +32,14 @@ export function resolveJsDependencies(filePath: string){
         userModulePaths: userModulePaths,
         npmPaths: npmDepPaths
     }   
+}
+
+function getAst(path: string): any{
+    const code: string = fs.readFileSync(path, "utf8");
+    const ast: object = parse(code, {
+        sourceType: "module"
+    });
+    return ast;
 }
 
 function recogniseNpm(filePath: string){
