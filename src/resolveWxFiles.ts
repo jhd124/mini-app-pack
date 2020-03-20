@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import { resolveJsDependencies } from "./resolveJsDependencies";
+import { resolveJsDeps } from "./resolveJsDeps";
 
 const cwd = process.cwd();
 const SRC_DIR = path.join(cwd, "src")
@@ -73,7 +73,7 @@ function resolveJsRecursive(path: string): void{
     } else if(isInCollection(depItem)){
         // noop
     } else {
-        const deps = resolveJsDependencies(path);
+        const deps = resolveJsDeps(path);
         const {
             userModulePaths,
             npmPaths,

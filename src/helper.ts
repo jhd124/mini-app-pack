@@ -1,7 +1,8 @@
 import * as fs from "fs-extra";
-import {parse as pathParse, join as pathJoin, isAbsolute} from "path";
+import {posix} from "path";
+const {parse: pathParse, join: pathJoin, isAbsolute} = posix;
 
-export function resolveUserModuleImportPath(filePath: string, moduleImportPath: string): string{
+export function getDepAbsPath(filePath: string, moduleImportPath: string): string{
     const {dir} = pathParse(filePath);
     const isModuleImportPathAbsolute = isAbsolute(moduleImportPath);
     if(isModuleImportPathAbsolute){

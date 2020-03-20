@@ -1,11 +1,10 @@
 import * as cheerio from "cheerio";
-import { resolveUserModuleImportPath, readFileSync } from "./helper";
+import { getDepAbsPath, readFileSync } from "./helper";
 
-function resolveWxmlDependencies(filePath: string){
+export function resolveWxmlDependencies(filePath: string){
     const $ = cheerio.load(readFileSync(filePath))
-    console.log($("wxs").attr("src"))
     const wxsDependencies = getSrcsFromTag(filePath, $, "wxs")
-    const wxmlDependencies = getSrcsFromTag(filePath, $, "wxml")
+    const wxmlDependencies = getSrcsFromTag(filePath, $, "template")
     return {
         wxsDependencies,
         wxmlDependencies,
@@ -13,8 +12,8 @@ function resolveWxmlDependencies(filePath: string){
 }
 
 function getSrcsFromTag(filePath:string, cheer:CheerioStatic, tagName: string): string[]{
-    Array.from(cheer(tagName))
+    return Array.from(cheer(tagName))
         .map(elem => elem.attribs.src)
         .filter(depPath => !!depPath)
-        .map(depPath => resolveUserModuleImportPath(filePath, depPath))
+        .map(depPath => getDepAbsPath(filePath, depPath))
 }
