@@ -2,7 +2,7 @@ import {readFileSync, getDepAbsPath} from "./helper";
 import * as css from "css";
 
 
-export function resolveWxssDependencies(filePath: string): string[]{
+export function resolveWxssDeps(filePath: string): string[]{
     const wxssCode = readFileSync(filePath);
     var ast = css.parse(wxssCode)
     return ast.stylesheet.rules

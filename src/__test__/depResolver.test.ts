@@ -1,12 +1,13 @@
-import { resolveWxmlDependencies } from "../resolveWxmlDependencies"
+import { resolveWxmlDeps } from "../resolveWxmlDeps"
 import { resolveWxssDependencies } from "../resolveWxssDependencies"
 import { readFileSync } from "fs-extra";
-import { resolveJsDeps, npmDir } from "../resolveJsDeps";
+import { resolveJsDeps } from "../resolveJsDeps";
+import { NPM_DIR } from "../helper";
 import generate from "@babel/generator";
 
 jest.mock("fs-extra");
 
-describe("resolveWxmlDependencies", () => {
+describe("resolvewxmlDeps", () => {
     test("should return the paths of dependencies in certain wxml file", () => {
         const filePath = "/pages/index/Index.wxml";
 
@@ -23,9 +24,9 @@ describe("resolveWxmlDependencies", () => {
             }
         })
 
-        expect(resolveWxmlDependencies(filePath)).toEqual({
-            wxsDependencies: ["/wxs/computeSum.wxs"],
-            wxmlDependencies: ["/pages/templates/header.wxml"]
+        expect(resolveWxmlDeps(filePath)).toEqual({
+            wxsDeps: ["/wxs/computeSum.wxs"],
+            wxmlDeps: ["/pages/templates/header.wxml"]
         })
     })
 })
@@ -99,10 +100,10 @@ describe("resolveJsDependencies", () => {
         
         const {code} = generate(userModule.ast)
         
-        expect(code).toMatch(`${npmDir}/somePf`)
-        expect(code).toMatch(`${npmDir}/somethingMagical`)
-        expect(code).toMatch(`${npmDir}/lodash`)
-        expect(code).toMatch(`${npmDir}/moment`)
+        expect(code).toMatch(`${NPM_DIR}/somePf`)
+        expect(code).toMatch(`${NPM_DIR}/somethingMagical`)
+        expect(code).toMatch(`${NPM_DIR}/lodash`)
+        expect(code).toMatch(`${NPM_DIR}/moment`)
 
     })
 })

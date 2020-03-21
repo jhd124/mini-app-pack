@@ -2,15 +2,22 @@ import * as fs from "fs-extra";
 import {parse} from "@babel/parser"
 import traverse, { NodePath } from "@babel/traverse";
 import {parse as pathParse, join as pathJoin, isAbsolute} from "path";
-import {getDepAbsPath} from "./helper"
+import {
+    getDepAbsPath,
+    isNpm,
+    getNpmModulePath,
+    pendJsExt,
+} from "./helper"
 import * as t from "@babel/types"
 
 const cwd = process.cwd();
 const SRC_DIR = pathJoin(cwd, "src")
 
-export const npmDir = "/npm"
 
-export function resolveJsDeps(filePath: string){
+export function resolveJsDeps(filePath: string): {
+    userModule: JsFile,
+    npmDepNames: string[],
+} {
     const ast = getAst(filePath);
     const { dir } = pathParse(filePath);
     const npmDepNames: Set<string> = new Set()//string[] = [];
@@ -21,7 +28,7 @@ export function resolveJsDeps(filePath: string){
         if(path.node.callee.name === "require"){
             
             const depPath = path.node.arguments[0].value;
-            console.log(depPath)
+            
             if(isNpm(depPath)){
 
                 npmDepNames.add(depPath);
@@ -30,7 +37,7 @@ export function resolveJsDeps(filePath: string){
 
             } else {
 
-                const userModulePath = pendExt(getDepAbsPath(filePath, depPath))
+                const userModulePath = pendJsExt(getDepAbsPath(filePath, depPath))
 
                 userModuleDeps.add(userModulePath);
 
@@ -48,7 +55,7 @@ export function resolveJsDeps(filePath: string){
             path.node.source = t.stringLiteral(getNpmModulePath(depPath))
         } else {
 
-            const userModulePath = pendExt(getDepAbsPath(filePath, depPath))
+            const userModulePath = pendJsExt(getDepAbsPath(filePath, depPath))
 
             userModuleDeps.add(userModulePath);
         }
@@ -72,20 +79,3 @@ function getAst(path: string): any{
     return ast;
 }
 
-function isNpm(filePath: string): boolean{
-    const regExp = /^\.|^\//;
-    return !regExp.test(filePath);
-}
-
-function getNpmModulePath(moduleName: string): string{
-    return npmDir + "/" + moduleName;
-}
-
-function pendExt(filePath: string): string{
-    const {ext} = pathParse(filePath);
-    if(!ext){
-        return `${filePath}.js`;
-    } else {
-        return filePath;
-    }
-}

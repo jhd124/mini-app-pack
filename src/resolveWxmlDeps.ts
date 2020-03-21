@@ -1,13 +1,16 @@
 import * as cheerio from "cheerio";
 import { getDepAbsPath, readFileSync } from "./helper";
 
-export function resolveWxmlDependencies(filePath: string){
+export function resolveWxmlDeps(filePath: string): {
+    wxsDeps: string[],
+    wxmlDeps: string[],
+}{
     const $ = cheerio.load(readFileSync(filePath))
-    const wxsDependencies = getSrcsFromTag(filePath, $, "wxs")
-    const wxmlDependencies = getSrcsFromTag(filePath, $, "template")
+    const wxsDeps = getSrcsFromTag(filePath, $, "wxs")
+    const wxmlDeps = getSrcsFromTag(filePath, $, "template")
     return {
-        wxsDependencies,
-        wxmlDependencies,
+        wxsDeps,
+        wxmlDeps,
     }
 }
 
