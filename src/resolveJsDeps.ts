@@ -14,13 +14,10 @@ const cwd = process.cwd();
 const SRC_DIR = pathJoin(cwd, "src")
 
 
-export function resolveJsDeps(filePath: string): {
-    userModule: JsFile,
-    npmDepNames: string[],
-} {
+export function resolveJsDeps(filePath: string): JsFileInfo{
     const ast = getAst(filePath);
     const { dir } = pathParse(filePath);
-    const npmDepNames: Set<string> = new Set()//string[] = [];
+    const npmDepNames: Set<string> = new Set();//string[] = [];
     const userModuleDeps: Set<string> = new Set();
   
     traverse(ast, {
@@ -62,13 +59,35 @@ export function resolveJsDeps(filePath: string): {
       }
     });
     return {
-        userModule: {
-            path: filePath,
-            dependencies: Array.from(userModuleDeps),
-            ast,
-        },
-        npmDepNames: Array.from(npmDepNames),
+        filePath,
+        userModuleDeps: Array.from(userModuleDeps),
+        ast,
+        npmDeps: Array.from(npmDepNames),
     }   
+}
+
+export function walkJsFiles(entries: string[], visitor: (arg: JsFileInfo) => {}){
+
+    const footprint: Set<string> = new Set();
+
+    function walkFiles(entries: string[]){
+        
+        for(const filePath of entries){
+            if(footprint.has(filePath)){
+                // noop
+            } else {
+                footprint.add(filePath);
+
+                const jsFileInfo = resolveJsDeps(filePath)
+                if(visitor){
+                    visitor(jsFileInfo);
+                }
+                   
+                walkFiles(jsFileInfo.userModuleDeps);
+            }
+        }
+    }
+    walkFiles(entries);
 }
 
 function getAst(path: string): any{
@@ -78,4 +97,3 @@ function getAst(path: string): any{
     });
     return ast;
 }
-

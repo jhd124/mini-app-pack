@@ -36,18 +36,18 @@ function readAppJSON(){
     }
 }
 
-
-export function getFilesByType(
-    type: FileType.JS | FileType.WXML | FileType.WXSS | FileType.JSON
-): Set<string>{
-    return wxFileCollection[type];
-}
-
 export function getDepCollection(){
-    return wxFileCollection;
+    return {
+        npmCollection,
+        wxssCollection,
+        wxmlCollection,
+        wxsCollection,
+        jsonCollection,
+        userJsModuleCollection,
+    };
 }
 
-function resolveJsRecursive(filePath: string): void{
+export function resolveJsRecursive(filePath: string): void{
     if(!filePath){
         // noop
     } else {
@@ -73,7 +73,7 @@ function resolveJsRecursive(filePath: string): void{
     }
 }
 
-function resolveWxssRecursive(filePath: string): void{
+export function resolveWxssRecursive(filePath: string): void{
     if(!filePath){
         // noop
     } else {
@@ -89,7 +89,7 @@ function resolveWxssRecursive(filePath: string): void{
     }
 }
 
-function resolveWxmlRecursive(filePath: string): void{
+export function resolveWxmlRecursive(filePath: string): void{
     if(!filePath){
         // noop
     } else {
@@ -112,12 +112,11 @@ function resolveWxmlRecursive(filePath: string): void{
 }
 
 
-function resolveDependencies(){
+export function resolveFiles(){
     digAppJSON();
     const jsFilePaths = wxFileCollection[FileType.JS].keys();
     const wxmlFilePaths = wxFileCollection[FileType.WXML].keys();
     const wxssFilePaths = wxFileCollection[FileType.WXSS].keys();
-    const jsonFilePaths = wxFileCollection[FileType.JSON].keys();
 
     for(const jsFilePath of jsFilePaths){
         resolveJsRecursive(jsFilePath);
@@ -205,14 +204,24 @@ function destructSubpackageFromAppJSON(subpackages: any[]): FileItem[]{
 
 function genPageDepItems(pagePath: string): FileItem[]{
     return [
-        FileType.JS,
-        FileType.JSON,
-        FileType.WXSS,
-        FileType.WXML,
-    ].map(depType => ({
-        type: depType,
-        path: appendFileExt(pagePath, depType),
-    }))
+        {
+            type: FileType.JS,
+            path: appendFileExt(pagePath, FileType.JS)
+        },
+        {
+            type: FileType.JSON,
+            path: appendFileExt(pagePath, FileType.JSON)
+        },
+        {
+            type: FileType.WXML,
+            path: appendFileExt(pagePath, FileType.WXML)
+        },
+        {
+            type: FileType.WXSS,
+            path: appendFileExt(pagePath, FileType.WXSS)
+        },
+
+    ]
 }
 
 function pagePathArrToDepItems(pagePathArr: string[]): FileItem[]{
@@ -236,6 +245,7 @@ function _flatten(arr: any[], result: any[] = []){
         }
     }
 }
+
 function flatten(arr: any[]){
     const result: any[] = [];
     _flatten(arr, result);
