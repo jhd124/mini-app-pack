@@ -1,0 +1,7 @@
+{
+    "pages": [
+        "pages/index/Index",
+        "pages/mainPage1/MainPage1",
+        "pages/pageNoJson/PageNoJson"
+    ]
+}

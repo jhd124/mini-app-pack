@@ -1,0 +1,17 @@
+{
+    "app.json": {
+        "pages": [
+            "pages/index/index",
+            "pages/logs/logs"
+        ],
+        "usingComponents": {
+            "nav-bar": "components/navBar/NavBar",
+            "tab-bar": "/components/tabBar/TabBar",
+            "left-bar": "./components/letBar/LeftBar",
+            "right-bar": "pages/components/rightBar/RightBar"
+        },
+        "subpackages": [{
+            
+        }]
+    }
+}

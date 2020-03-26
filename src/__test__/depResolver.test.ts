@@ -1,5 +1,4 @@
 import { resolveWxmlDeps } from "../resolveWxmlDeps"
-import { resolveWxssDependencies } from "../resolveWxssDependencies"
 import { readFileSync } from "fs-extra";
 import { resolveJsDeps } from "../resolveJsDeps";
 import { NPM_DIR } from "../helper";
@@ -10,7 +9,7 @@ jest.mock("fs-extra");
 describe("resolvewxmlDeps", () => {
     test("should return the paths of dependencies in certain wxml file", () => {
         const filePath = "/pages/index/Index.wxml";
-
+        
         readFileSync.mockImplementationOnce((path: string) => {
             if(path === filePath){
                 return `
