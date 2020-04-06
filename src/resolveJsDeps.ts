@@ -9,10 +9,10 @@ import {
     pendJsExt,
 } from "./helper"
 import * as t from "@babel/types"
+import { JsFileInfo } from './types';
 
 const cwd = process.cwd();
 const SRC_DIR = pathJoin(cwd, "src")
-
 
 export function resolveJsDeps(filePath: string): JsFileInfo{
     const ast = getAst(filePath);
@@ -66,7 +66,7 @@ export function resolveJsDeps(filePath: string): JsFileInfo{
     }   
 }
 
-export function walkJsFiles(entries: string[], visitor: (arg: JsFileInfo) => {}){
+export function walkJsFiles(entries: string[], visitor: (arg: JsFileInfo) => void){
 
     const footprint: Set<string> = new Set();
 

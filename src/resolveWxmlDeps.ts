@@ -1,7 +1,12 @@
 import * as cheerio from "cheerio";
 import { getDepAbsPath, readFileSync } from "./helper";
+import { WxmlFileInfo } from './types';
+import { pathExistsSync } from "fs-extra";
 
 export function resolveWxmlDeps(filePath: string): WxmlFileInfo{
+    if(!pathExistsSync(filePath)){
+        throw new Error(`File ${filePath} is not found`)
+    }
     const $ = cheerio.load(readFileSync(filePath))
     const wxsDeps = getSrcsFromTag(filePath, $, "wxs")
     const wxmlDeps = getSrcsFromTag(filePath, $, "template")
@@ -20,9 +25,9 @@ function getSrcsFromTag(filePath:string, cheer:CheerioStatic, tagName: string): 
         .map(depPath => getDepAbsPath(filePath, depPath))
 }
 
-function walkWxmlFiles(
+export function walkWxmlFiles(
     entries: string[],
-    visitor: (arg: WxmlFileInfo) => {}
+    visitor: (arg: WxmlFileInfo) => void
 ) {
 
     const footprint: Set<string> = new Set();

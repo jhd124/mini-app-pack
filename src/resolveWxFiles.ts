@@ -1,14 +1,11 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import { resolveJsDeps } from "./resolveJsDeps";
-import { isNpm } from "./helper";
-import { resolveWxssDeps } from "./resolveWxssDeps";
-import { resolveWxmlDeps } from "./resolveWxmlDeps";
-
-const cwd = process.cwd();
-const SRC_DIR = path.join(cwd, "src")
-
-// 
+import { walkJsFiles } from "./resolveJsDeps";
+import { walkWxssFiles } from "./resolveWxssDeps";
+import { walkWxmlFiles } from "./resolveWxmlDeps";
+import {FileType, FileItem, JsFileInfo} from './types';
+import { SRC_DIR } from "./helper";
+ 
 const wxFileCollection = {
     [FileType.JS]: new Set<string>(),
     [FileType.WXML]: new Set<string>(),
@@ -21,7 +18,7 @@ const wxssCollection: Set<string> = new Set();
 const wxmlCollection: Set<string> = new Set();
 const wxsCollection: Set<string> = new Set();
 const jsonCollection: Set<string> = wxFileCollection[FileType.JSON];
-const userJsModuleCollection: Map<string, JsFile> = new Map();
+const userJsModuleCollection: Map<string, JsFileInfo> = new Map();
 
 
 function readAppJSON(){
@@ -47,86 +44,72 @@ export function getDepCollection(){
     };
 }
 
-export function resolveJsRecursive(filePath: string): void{
-    if(!filePath){
-        // noop
-    } else {
+
+// const {
+//     userModule,
+//     npmDepNames,
+// } = resolveJsDeps(filePath)
+// for(const npm of npmDepNames){
+//     npmCollection.add(npm);
+// }
+// const {
+//     path: jsPath,
+//     dependencies
+// } = userModule;
+// userJsModuleCollection.set(jsPath, userModule);
+// for(const dep of dependencies){
+//     if(userJsModuleCollection.has(dep)){
+//         // noop
+//     } else {
+//         resolveJsRecursive(dep);
+//     }
+// }
+
+export function walkAllFiles(){
+    digAppJSON();
+    const jsFilePaths = Array.from(wxFileCollection[FileType.JS].keys());
+    const wxmlFilePaths = Array.from(wxFileCollection[FileType.WXML].keys());
+    const wxssFilePaths = Array.from(wxFileCollection[FileType.WXSS].keys());
+
+    walkJsFiles(jsFilePaths, function(jsFileInfo){
         const {
-            userModule,
-            npmDepNames,
-        } = resolveJsDeps(filePath)
-        for(const npm of npmDepNames){
+            npmDeps,
+            filePath,
+        } = jsFileInfo;
+
+        for(const npm of npmDeps){
             npmCollection.add(npm);
         }
-        const {
-            path: jsPath,
-            dependencies
-        } = userModule;
-        userJsModuleCollection.set(jsPath, userModule);
-        for(const dep of dependencies){
-            if(userJsModuleCollection.has(dep)){
-                // noop
-            } else {
-                resolveJsRecursive(dep);
-            }
-        }
-    }
-}
 
-export function resolveWxssRecursive(filePath: string): void{
-    if(!filePath){
-        // noop
-    } else {
-        const wxssFilePaths = resolveWxssDeps(filePath);
-        for(const dep of wxssFilePaths){
-            if(wxssCollection.has(dep)){
-                // noop
-            } else {
-                wxssCollection.add(dep);
-                resolveWxssRecursive(dep);
-            }
-        }
-    }
-}
+        // for(const userModule of userModuleDeps){
+            userJsModuleCollection.set(filePath, jsFileInfo);
+        // }
 
-export function resolveWxmlRecursive(filePath: string): void{
-    if(!filePath){
-        // noop
-    } else {
+    });
+
+    walkWxssFiles(wxssFilePaths, function(wxssFileInfo){
         const {
-            wxsDeps,
+            wxssDeps,
+        } = wxssFileInfo;
+
+        for(const wxssDep of wxssDeps){
+            wxssCollection.add(wxssDep);
+        }
+
+    });
+    
+    walkWxmlFiles(wxmlFilePaths, function(wxmlFileInfo){
+        const {
             wxmlDeps,
-        } = resolveWxmlDeps(filePath);
-        for(const dep of wxsDeps){
-            wxsCollection.add(dep);
+            wxsDeps,
+        } = wxmlFileInfo;
+        for(const wxsDep of wxsDeps){
+            wxsCollection.add(wxsDep);
         }
-        for(const dep of wxmlDeps){
-            if(wxmlCollection.has(dep)){
-                // noop
-            } else {
-                wxmlCollection.add(dep);
-                resolveWxmlRecursive(dep);
-            }
+        for(const wxmlDep of wxmlDeps){
+            wxmlCollection.add(wxmlDep);
         }
-    }
-}
-
-
-export function resolveFiles(){
-    digAppJSON();
-    const jsFilePaths = wxFileCollection[FileType.JS].keys();
-    const wxmlFilePaths = wxFileCollection[FileType.WXML].keys();
-    const wxssFilePaths = wxFileCollection[FileType.WXSS].keys();
-
-    for(const jsFilePath of jsFilePaths){
-        resolveJsRecursive(jsFilePath);
-    }
-    for(const wxmlFilePath of wxmlFilePaths){
-        resolveWxmlRecursive(wxmlFilePath);
-    }
-    for(const wxssFilePath of wxssFilePaths){
-        resolveWxssRecursive(wxssFilePath);
-    }
+    });
 
 }
 
@@ -153,9 +136,10 @@ function digAppJSON(): void{
 }
 
 function setDep(dep: FileItem): void{
-    const {type, path } = dep;
+    const {type, path: filePath } = dep;
     const targetCollection = wxFileCollection[type];
-    targetCollection.add(path)
+    const depPath = path.join(SRC_DIR, filePath);
+    targetCollection.add(depPath)
 }
 
 function setDeps(deps: FileItem[]){
@@ -225,7 +209,7 @@ function genPageDepItems(pagePath: string): FileItem[]{
 }
 
 function pagePathArrToDepItems(pagePathArr: string[]): FileItem[]{
-    return pagePathArr.map(pagePath => genPageDepItems(pagePath)).reduce(arrConcat);
+    return pagePathArr.map(pagePath => genPageDepItems(pagePath)).reduce(arrConcat, []);
 }
 
 function appendFileExt(groupPath: string, ext: string): string{

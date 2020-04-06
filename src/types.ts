@@ -1,4 +1,4 @@
-enum FileType {
+export enum FileType {
     JS = "js",
     WXML = "wxml",
     WXSS = "wxss",
@@ -7,32 +7,32 @@ enum FileType {
     NPM = "npm",
 }
 
-type FileItem = {
+export type FileItem = {
     type: FileType.JS | FileType.WXML | FileType.WXSS | FileType.JSON,
     path: string,
 }
 
-type JsFile = {
+export type JsFile = {
     path: string,
     dependencies: string[],
     ast: any,
 }
 
-type JsFileInfo = {
+export type JsFileInfo = {
     npmDeps: string[],
     userModuleDeps: string[],
     ast: any,
     filePath: string
 }
 
-type WxmlFileInfo = {
+export type WxmlFileInfo = {
     wxsDeps: string[],
     wxmlDeps: string[],
     ast: any,
     filePath: string,
 }
 
-type WxssFileInfo = {
+export type WxssFileInfo = {
     wxssDeps: string[],
     ast: any,
     filePath: string,

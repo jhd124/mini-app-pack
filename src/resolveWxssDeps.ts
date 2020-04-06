@@ -1,23 +1,29 @@
 import {readFileSync, getDepAbsPath} from "./helper";
 import * as css from "css";
-
+import { WxssFileInfo } from './types';
+import { pathExistsSync } from "fs-extra";
 
 export function resolveWxssDeps(filePath: string): WxssFileInfo{
-    const wxssCode = readFileSync(filePath);
-    var ast = css.parse(wxssCode)
-    const deps = ast.stylesheet.rules
-        .filter(rule => rule.type === "import")
-        .map((rule: css.Import) => getDepAbsPath(filePath, JSON.parse(rule.import)))
-    return {
-        wxssDeps: deps,
-        ast,
-        filePath,
+    if(!pathExistsSync(filePath)){
+        // TODO warn
+        return null;
+    } else {
+        const wxssCode = readFileSync(filePath);
+        var ast = css.parse(wxssCode)
+        const deps = ast.stylesheet.rules
+            .filter(rule => rule.type === "import")
+            .map((rule: css.Import) => getDepAbsPath(filePath, JSON.parse(rule.import)))
+        return {
+            wxssDeps: deps,
+            ast,
+            filePath,
+        }
     }
 }
 
 export function walkWxssFiles(
     entries: string[],
-    visitor: (arg: WxssFileInfo) => {}
+    visitor: (arg: WxssFileInfo) => void
 ): void{
     
     const footprint: Set<string> = new Set();
@@ -31,11 +37,13 @@ export function walkWxssFiles(
 
                 const wxssFileInfo = resolveWxssDeps(filePath);
 
-                if(visitor){
-                    visitor(wxssFileInfo);
+                if(wxssFileInfo){
+                    if(visitor){
+                        visitor(wxssFileInfo);
+                    }
+    
+                    walkFiles(wxssFileInfo.wxssDeps);
                 }
-
-                walkFiles(wxssFileInfo.wxssDeps);
 
             }
         }
