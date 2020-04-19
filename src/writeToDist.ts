@@ -1,6 +1,6 @@
 import { getDepCollection } from "./resolveWxFiles";
 import generate from "@babel/generator";
-import { getDistPathFromSrc, safeWrite, safeCopy, cwd, DIST_DIR } from "./helper";
+import { getDistPathFromSrc, safeWrite, safeCopy, DIST_DIR, SRC_DIR } from "./helper";
 import { pathExistsSync, existsSync, readJSONSync } from "fs-extra";
 import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
@@ -70,7 +70,7 @@ function rollupNodeModule(moduleName: string): void {
 
     let modulePath = null;
 
-    const moduleNameDir = `${cwd}/node_modules/${moduleName}`;
+    const moduleNameDir = `${SRC_DIR}/node_modules/${moduleName}`;
     const indexPath = moduleNameDir + "/index.js";
     const indexFileExist = existsSync(indexPath);
 

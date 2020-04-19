@@ -11,9 +11,6 @@ import {
 import * as t from "@babel/types"
 import { JsFileInfo } from './types';
 
-const cwd = process.cwd();
-const SRC_DIR = pathJoin(cwd, "src")
-
 export function resolveJsDeps(filePath: string): JsFileInfo{
     const ast = getAst(filePath);
     const { dir } = pathParse(filePath);

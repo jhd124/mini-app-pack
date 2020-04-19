@@ -37,3 +37,7 @@ export type WxssFileInfo = {
     ast: any,
     filePath: string,
 }
+
+export type initOptions = {
+    projectPath: string,
+}

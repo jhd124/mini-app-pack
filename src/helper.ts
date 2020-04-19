@@ -1,10 +1,11 @@
 import * as fs from "fs-extra";
-import {parse as pathParse, join as pathJoin, isAbsolute} from "path";
+import {parse as pathParse, join as pathJoin, isAbsolute, resolve } from "path";
+import { getOptions } from "./context";
 
-export const NPM_DIR = "/npm";
-export const cwd = process.cwd();
-export const SRC_DIR = pathJoin(cwd, "src", "__test__", "data", "src")
-export const DIST_DIR = pathJoin(cwd, "dist", "__test__", "data", "src")
+const { projectPath } = getOptions();
+export const SRC_DIR = resolve(projectPath, "src")
+export const DIST_DIR = resolve(projectPath, "dist")
+export const NPM_DIST_DIR = resolve(DIST_DIR, "/npm");
 
 export function getDepAbsPath(filePath: string, moduleImportPath: string): string{
     const {dir} = pathParse(filePath);
@@ -30,7 +31,7 @@ export function isNpm(filePath: string): boolean{
 }
 
 export function getNpmModulePath(moduleName: string): string{
-    return NPM_DIR + "/" + moduleName;
+    return NPM_DIST_DIR + "/" + moduleName;
 }
 
 export function pendJsExt(filePath: string): string{

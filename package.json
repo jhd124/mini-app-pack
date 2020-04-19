@@ -20,11 +20,13 @@
     "@types/cheerio": "^0.22.16",
     "@types/css": "0.0.31",
     "@types/fs-extra": "^8.1.0",
+    "@types/meow": "^5.0.0",
     "@types/node": "^13.7.7",
     "cheerio": "^1.0.0-rc.3",
     "css": "^2.2.4",
     "eslint": "^6.8.0",
     "fs-extra": "^8.1.0",
+    "meow": "^6.1.0",
     "rollup": "^2.3.2",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-builtins": "^2.1.2",
@@ -33,5 +35,8 @@
   "devDependencies": {
     "@types/rollup-plugin-node-builtins": "^2.1.1",
     "typescript": "^3.8.3"
+  },
+  "bin": {
+    "mpack": "dist/index.js"
   }
 }

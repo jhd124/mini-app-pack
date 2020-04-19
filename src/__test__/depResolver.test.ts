@@ -1,7 +1,7 @@
 import { resolveWxmlDeps } from "../resolveWxmlDeps"
 import { readFileSync } from "fs-extra";
 import { resolveJsDeps } from "../resolveJsDeps";
-import { NPM_DIR } from "../helper";
+import { NPM_DIST_DIR } from "../helper";
 import generate from "@babel/generator";
 
 jest.mock("fs-extra");
@@ -99,10 +99,10 @@ describe("resolveJsDependencies", () => {
         
         const {code} = generate(userModule.ast)
         
-        expect(code).toMatch(`${NPM_DIR}/somePf`)
-        expect(code).toMatch(`${NPM_DIR}/somethingMagical`)
-        expect(code).toMatch(`${NPM_DIR}/lodash`)
-        expect(code).toMatch(`${NPM_DIR}/moment`)
+        expect(code).toMatch(`${NPM_DIST_DIR}/somePf`)
+        expect(code).toMatch(`${NPM_DIST_DIR}/somethingMagical`)
+        expect(code).toMatch(`${NPM_DIST_DIR}/lodash`)
+        expect(code).toMatch(`${NPM_DIST_DIR}/moment`)
 
     })
 })
