@@ -9,7 +9,12 @@ export function resolveWxmlDeps(filePath: string): WxmlFileInfo{
     }
     const $ = cheerio.load(readFileSync(filePath))
     const wxsDeps = getSrcsFromTag(filePath, $, "wxs")
-    const wxmlDeps = getSrcsFromTag(filePath, $, "template")
+    const wxmlDeps = [
+        ...getSrcsFromTag(filePath, $, "template"),
+        ...getSrcsFromTag(filePath, $, "import"),
+        ...getSrcsFromTag(filePath, $, "include"),
+    ]
+
     return {
         wxsDeps,
         wxmlDeps,

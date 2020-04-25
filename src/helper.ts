@@ -8,6 +8,7 @@ export const DIST_DIR = resolve(projectPath, "dist")
 export const NPM_DIST_DIR = resolve(DIST_DIR, "/npm");
 
 export function getDepAbsPath(filePath: string, moduleImportPath: string): string{
+    
     const {dir} = pathParse(filePath);
     const isModuleImportPathAbsolute = isAbsolute(moduleImportPath);
     if(isModuleImportPathAbsolute){
